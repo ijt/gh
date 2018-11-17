@@ -20,7 +20,13 @@ GitHub from the command line
 
 commands:
 
-  pulls		list open pull requests
+  pulls		list open pull requests on the repo
+  issues	list open issues for the repo
+
+This command expects the following environment variables to be set:
+
+  GITHUB_OWNER	owner of the repo
+  GITHUB_REPO	the repo on GitHub
 `)
 		os.Exit(1)
 	}
@@ -30,21 +36,28 @@ commands:
 	client := github.NewClient(nil)
 	owner := mustGetenv("GITHUB_OWNER")
 	repo := mustGetenv("GITHUB_REPO")
+	ctx := context.Background()
 
+	var err error
 	switch cmd {
 	case "pulls":
-		pulls(client, w, owner, repo)
+		err = pulls(ctx, client, w, owner, repo)
+	case "issues":
+		err = issues(ctx, client, w, owner, repo)
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
 		os.Exit(1)
 	}
+	if err != nil {
+		log.Fatal(err)
+	}
 	w.Flush()
 }
 
-func pulls(client *github.Client, w io.Writer, owner, repo string) {
-	prs, _, err := client.PullRequests.List(context.Background(), owner, repo, nil)
+func pulls(ctx context.Context, client *github.Client, w io.Writer, owner, repo string) error {
+	prs, _, err := client.PullRequests.List(ctx, owner, repo, nil)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	var pr *github.PullRequest
 	for _, pr = range prs {
@@ -52,6 +65,25 @@ func pulls(client *github.Client, w io.Writer, owner, repo string) {
 			fmt.Fprintf(w, "%s\t%s\t%s\n", *pr.User.Login, *pr.HTMLURL, *pr.Title)
 		}
 	}
+	return nil
+}
+
+func issues(ctx context.Context, client *github.Client, w io.Writer, owner, repo string) error {
+	issues, _, err := client.Issues.ListByRepo(ctx, owner, repo, nil)
+	if err != nil {
+		return err
+	}
+	var i *github.Issue
+	for _, i = range issues {
+		if *i.State == "open" {
+			whom := ""
+			if i.Assignee != nil {
+				whom = *i.Assignee.Login
+			}
+			fmt.Fprintf(w, "%s\t%s\t%s\n", whom, *i.HTMLURL, *i.Title)
+		}
+	}
+	return nil
 }
 
 func mustGetenv(name string) string {
