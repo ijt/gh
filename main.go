@@ -12,9 +12,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func main() {
-	if len(os.Args) != 1+1 {
-		fmt.Fprintf(os.Stderr, `usage: gh COMMAND
+var usage = `usage: gh COMMAND
 
 GitHub from the command line
 
@@ -27,7 +25,11 @@ This command expects the following environment variables to be set:
 
   GITHUB_OWNER	owner of the repo
   GITHUB_REPO	the repo on GitHub
-`)
+`
+
+func main() {
+	if len(os.Args) != 1+1 || len(os.Args) >= 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
+		fmt.Fprintf(os.Stderr, usage)
 		os.Exit(1)
 	}
 	cmd := os.Args[1]
