@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"text/tabwriter"
@@ -59,7 +58,8 @@ func main() {
 		os.Exit(1)
 	}
 	if err != nil {
-		log.Fatalf("gh: %v", err)
+		fmt.Fprintf(os.Stderr, "gh: %v\n", err)
+		os.Exit(1)
 	}
 	w.Flush()
 }
