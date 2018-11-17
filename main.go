@@ -47,11 +47,11 @@ func main() {
 	case "issues":
 		err = issues(ctx, client, w, owner, repo)
 	default:
-		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
+		fmt.Fprintf(os.Stderr, "gh: unknown command: %s\n", cmd)
 		os.Exit(1)
 	}
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("gh: %v", err)
 	}
 	w.Flush()
 }
@@ -91,7 +91,7 @@ func issues(ctx context.Context, client *github.Client, w io.Writer, owner, repo
 func mustGetenv(name string) string {
 	val := os.Getenv(name)
 	if val == "" {
-		fmt.Fprintf(os.Stderr, "%s environment variable must be set\n", name)
+		fmt.Fprintf(os.Stderr, "gh: %s environment variable must be set\n", name)
 		os.Exit(1)
 	}
 	return val
