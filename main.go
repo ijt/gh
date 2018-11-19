@@ -69,6 +69,7 @@ func pulls(ctx context.Context, client *github.Client, w io.Writer, owner, repo 
 	if err != nil {
 		return err
 	}
+	fmt.Fprintf(w, "%s\t%s\t%s\n", "author", "URL", "title")
 	var pr *github.PullRequest
 	for _, pr = range prs {
 		if *pr.State == "open" {
@@ -83,6 +84,7 @@ func issues(ctx context.Context, client *github.Client, w io.Writer, owner, repo
 	if err != nil {
 		return err
 	}
+	fmt.Fprintf(w, "%s\t%s\t%s\n", "assignee", "URL", "title")
 	var i *github.Issue
 	for _, i = range issues {
 		if *i.State == "open" {
